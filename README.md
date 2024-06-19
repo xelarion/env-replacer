@@ -6,6 +6,7 @@
 
 - Efficiently replaces `${VAR_NAME}` placeholders with corresponding values from `.env`.
 - Supports recursive replacement for all files within a directory and its subdirectories.
+- Option to output to a specified file, leaving the original file unchanged.
 - Simple and lightweight, facilitating easy integration into deployment and configuration workflows.
 
 ## Usage

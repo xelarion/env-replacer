@@ -1,11 +1,12 @@
 # env-replacer
 
-`env-replacer` is a command-line tool designed to streamline the process of replacing environment variables in configuration files. It reads variables from a `.env` file and substitutes placeholders within specified files or directories, ensuring smooth configuration management.
+`env-replacer` is a command-line tool designed to streamline the process of replacing environment variables in configuration files. It reads variables from a `.env` file and substitutes placeholders within specified files or directories, ensuring smooth and safe configuration management.
 
 ## Features
 
 - Efficiently replaces `${VAR_NAME}` placeholders with corresponding values from `.env`.
 - Supports recursive replacement for all files within a directory and its subdirectories.
+- Ensures safe replacement: placeholders for variables not present in the `.env` file remain unchanged.
 - Option to output to a specified file, leaving the original file unchanged.
 - Simple and lightweight, facilitating easy integration into deployment and configuration workflows.
 
@@ -110,6 +111,61 @@ api_url=https://api.example.com
 ```
 
 Contents of `configs/app_updated.conf` after running `replace_env.sh` will be the same as `configs/app.conf`, while `configs/app.conf` remains unchanged.
+
+#### 4. Safe Replacement Example
+
+Assume the following configuration file (`configs/app_safe.conf`):
+
+```plaintext
+# Example config file
+db_password=${DB_PASSWORD}
+api_url=${API_URL}
+other_var=${OTHER_VAR}
+```
+
+To replace variables in the file while leaving undefined placeholders unchanged:
+
+```bash
+./replace_env.sh .env configs/app_safe.conf
+```
+
+Contents of `configs/app_safe.conf` before:
+
+```plaintext
+# Example config file
+db_password=${DB_PASSWORD}
+api_url=${API_URL}
+other_var=${OTHER_VAR}
+```
+
+After running `replace_env.sh`:
+
+```plaintext
+# Example config file
+db_password=mysecretpassword
+api_url=https://api.example.com
+other_var=${OTHER_VAR}
+```
+
+...
+
+### Running Tests
+
+To ensure the script works correctly, you can run the included test script. The test script verifies single file replacement, directory recursive replacement, specifying output files, and safe replacement features.
+
+1. Make sure `test_replace_env.sh` has execute permissions:
+
+   ```bash
+   chmod +x test_replace_env.sh
+   ```
+
+2. Run the test script:
+
+   ```bash
+   ./test_replace_env.sh
+   ```
+
+The test script will output the results of each test and indicate whether they passed or failed.
 
 ### License
 

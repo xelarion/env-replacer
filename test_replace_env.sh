@@ -81,6 +81,21 @@ run_test "Specify output file - app_updated.conf api_url" "grep -o 'api_url=http
 run_test "Specify output file - original app.conf db_password" "grep -o 'db_password=\${DB_PASSWORD}' configs/app.conf" "db_password=\${DB_PASSWORD}"
 run_test "Specify output file - original app.conf api_url" "grep -o 'api_url=\${API_URL}' configs/app.conf" "api_url=\${API_URL}"
 
+# Test 4: Safe replacement example
+echo "DB_PASSWORD=mysecretpassword" > .env
+echo "API_URL=https://api.example.com" >> .env
+
+mkdir -p configs
+echo "db_password=\${DB_PASSWORD}" > configs/app_safe.conf
+echo "api_url=\${API_URL}" >> configs/app_safe.conf
+echo "other_var=\${OTHER_VAR}" >> configs/app_safe.conf
+
+./replace_env.sh .env configs/app_safe.conf
+
+run_test "Safe replacement - db_password" "grep -o 'db_password=mysecretpassword' configs/app_safe.conf" "db_password=mysecretpassword"
+run_test "Safe replacement - api_url" "grep -o 'api_url=https://api.example.com' configs/app_safe.conf" "api_url=https://api.example.com"
+run_test "Safe replacement - other_var" "grep -o 'other_var=\${OTHER_VAR}' configs/app_safe.conf" "other_var=\${OTHER_VAR}"
+
 # Clean up the test environment
 teardown
 

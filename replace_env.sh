@@ -10,18 +10,6 @@ ENV_FILE="$1"
 INPUT="$2"
 OUTPUT="${3:-$2}"
 
-# Function to load environment variables from the .env file
-load_env_vars() {
-    set -a
-    # Read and export variables from the .env file, skipping commented and empty lines
-    while IFS='=' read -r var_name var_value; do
-        if [[ ! "$var_name" =~ ^# && -n "$var_name" ]]; then
-            export "$var_name"="$(eval echo "$var_value")"
-        fi
-    done < "$ENV_FILE"
-    set +a
-}
-
 # Function to replace variables in the specified file
 replace_vars() {
     local input_file="$1"
@@ -33,9 +21,8 @@ replace_vars() {
     cp "$input_file" "$temp_file"
 
     # Replace placeholders with environment variable values
-    while IFS='=' read -r var_name var_value; do
+    while IFS='=' read -r var_name var_value || [ -n "$var_name" ]; do
         if [[ ! "$var_name" =~ ^# && -n "$var_name" ]]; then
-            var_value=$(eval echo "\$$var_name")
             # Escape forward slashes and ampersands
             var_value=$(echo "$var_value" | sed -e 's/[\/&]/\\&/g')
             sed -i -e "s|\${$var_name}|$var_value|g" "$temp_file"
@@ -52,9 +39,6 @@ process_directory() {
         replace_vars "$file" "$file"
     done
 }
-
-# Load environment variables from the .env file
-load_env_vars
 
 # Determine if input is a file or directory and process accordingly
 if [ -d "$INPUT" ]; then

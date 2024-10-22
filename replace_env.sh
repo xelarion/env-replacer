@@ -33,7 +33,12 @@ replace_vars_in_file() {
         if [[ ! "$var_name" =~ ^# && -n "$var_name" ]]; then
             # Escape forward slashes and ampersands
             var_value=$(printf '%s\n' "$var_value" | sed -e 's/[\/&]/\\&/g')
-            sed -i "" "s|\${$var_name}|$var_value|g" "$output_file"
+            # Use sed for in-place replacement without causing filename issues
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i "" "s|\${$var_name}|$var_value|g" "$output_file"
+            else
+                sed -i "s|\${$var_name}|$var_value|g" "$output_file"
+            fi
         fi
     done < "$ENV_FILE"
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+# https://github.com/xelarion/env-replacer
 
 # Ensure the script is called with the correct number of arguments
 if [ "$#" -lt 2 ]; then

@@ -33,6 +33,22 @@ run_test() {
     fi
 }
 
+# Function to check file permissions
+check_permissions() {
+    local original_file="$1"
+    local modified_file="$2"
+
+    original_permissions=$(ls -l "$original_file" | awk '{print $1}')
+    modified_permissions=$(ls -l "$modified_file" | awk '{print $1}')
+
+    if [ "$original_permissions" == "$modified_permissions" ]; then
+        echo "Permissions match: $original_permissions"
+    else
+        echo "Permission mismatch: original $original_permissions, modified $modified_permissions"
+        exit 1
+    fi
+}
+
 # Set up the test environment
 setup
 
@@ -112,6 +128,39 @@ echo "last_var=\${LAST_VAR}" >> configs/app_no_newline.conf
 run_test "No newline at end of .env - db_password" "grep -o 'db_password=mysecretpassword' configs/app_no_newline.conf" "db_password=mysecretpassword"
 run_test "No newline at end of .env - api_url" "grep -o 'api_url=https://api.example.com' configs/app_no_newline.conf" "api_url=https://api.example.com"
 run_test "No newline at end of .env - last_var" "grep -o 'last_var=value' configs/app_no_newline.conf" "last_var=value"
+
+# New tests for permissions
+echo "Testing permissions..."
+
+# Test 6: Different permissions for generated files
+# Create a source file with specific permissions
+touch configs/app_perm_test.conf
+chmod 640 configs/app_perm_test.conf
+echo "db_password=\${DB_PASSWORD}" > configs/app_perm_test.conf
+
+# Store original permissions
+original_perm_perm_test=$(ls -l configs/app_perm_test.conf | awk '{print $1}')
+
+# Run the replacement
+./replace_env.sh .env configs/app_perm_test.conf configs/app_perm_test_updated.conf
+
+# Check if the updated file has the same permissions
+check_permissions configs/app_perm_test.conf configs/app_perm_test_updated.conf
+
+# Test 7: Ensure updated file retains permissions
+# Create another source file with specific permissions
+touch configs/app_perm_test2.conf
+chmod 600 configs/app_perm_test2.conf
+echo "api_url=\${API_URL}" > configs/app_perm_test2.conf
+
+# Store original permissions
+original_perm_perm_test2=$(ls -l configs/app_perm_test2.conf | awk '{print $1}')
+
+# Run the replacement
+./replace_env.sh .env configs/app_perm_test2.conf configs/app_perm_test2_updated.conf
+
+# Check if the updated file has the same permissions
+check_permissions configs/app_perm_test2.conf configs/app_perm_test2_updated.conf
 
 # Clean up the test environment
 teardown

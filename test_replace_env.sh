@@ -96,6 +96,23 @@ run_test "Safe replacement - db_password" "grep -o 'db_password=mysecretpassword
 run_test "Safe replacement - api_url" "grep -o 'api_url=https://api.example.com' configs/app_safe.conf" "api_url=https://api.example.com"
 run_test "Safe replacement - other_var" "grep -o 'other_var=\${OTHER_VAR}' configs/app_safe.conf" "other_var=\${OTHER_VAR}"
 
+# Test 5: .env without a newline at the end
+echo "DB_PASSWORD=mysecretpassword" > .env
+echo "API_URL=https://api.example.com" >> .env
+# No trailing newline, use printf to avoid the newline
+printf "LAST_VAR=value" >> .env
+
+mkdir -p configs
+echo "db_password=\${DB_PASSWORD}" > configs/app_no_newline.conf
+echo "api_url=\${API_URL}" >> configs/app_no_newline.conf
+echo "last_var=\${LAST_VAR}" >> configs/app_no_newline.conf
+
+./replace_env.sh .env configs/app_no_newline.conf
+
+run_test "No newline at end of .env - db_password" "grep -o 'db_password=mysecretpassword' configs/app_no_newline.conf" "db_password=mysecretpassword"
+run_test "No newline at end of .env - api_url" "grep -o 'api_url=https://api.example.com' configs/app_no_newline.conf" "api_url=https://api.example.com"
+run_test "No newline at end of .env - last_var" "grep -o 'last_var=value' configs/app_no_newline.conf" "last_var=value"
+
 # Clean up the test environment
 teardown
 
